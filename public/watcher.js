@@ -7,8 +7,8 @@ let peerConnection;
 //   ]
 // };
 
-const socket = io.connect(window.location.origin);
-const video = document.querySelector("video");
+const socket = io.connect(window.location.origin)
+const video = document.querySelector("video")
 
 socket.on("offer", (id, description) => {
   peerConnection = new RTCPeerConnection();
@@ -18,6 +18,7 @@ socket.on("offer", (id, description) => {
     .then(sdp => peerConnection.setLocalDescription(sdp))
     .then(() => {
       socket.emit("answer", id, peerConnection.localDescription);
+      document.getElementById("connect").style.display = 'none'
     });
   peerConnection.ontrack = event => {
     video.srcObject = event.streams[0];
@@ -36,35 +37,29 @@ socket.on("candidate", (id, candidate) => {
 });
 
 const create = () => {
-  const array = new Uint8Array(8);
-  crypto.getRandomValues(array);
-  const secret = Array.from(array).map (b => b.toString (16).padStart (2, "0")).join ("");
-  socket.emit("watcher", { secret });
+  // const array = new Uint8Array(8);
+  // crypto.getRandomValues(array);
+  // const secret = Array.from(array).map (b => b.toString (16).padStart (2, "0")).join ("");
+  // socket.emit("watcher", { secret });
   const qrCode = new QRCodeStyling({
     width: 300,  
     height: 300,
-    data: secret,
+    data: `https://webrtc.digbata.de/broadcast.html#${socket.id}`,
   });
-  qrCode.append(document.getElementById("qr"))
-  document.getElementById("secret").innerText = secret
+  const qr = document.getElementById("qr")
+  qr.innerHTML = ''
+  qrCode.append(qr)
+  document.getElementById("secret").innerText = socket.id
   document.getElementById("connect").style.display = 'flex'
 }
 
 socket.on("connect", () => {
-  const broadcaster = localStorage.getItem('broadcaster')
-  if(broadcaster) {
-    socket.emit("watch", broadcaster, answer => {
-      if(!answer) create()
-    })
-    return
-  }
-  else
     create()
 });
 
-socket.on("broadcaster", (id) => {
-  localStorage.setItem('broadcaster', id)
-  socket.emit("watch", id);
+socket.on("disconnectPeer", id => {
+  peerConnection && peerConnection.close();
+  create();
 });
 
 window.onunload = window.onbeforeunload = () => {

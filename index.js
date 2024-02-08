@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 
-const port = process.env.PORT || 8765;
+const port = process.env.VIRTUAL_PORT || 8765;
 
 const http = require("http");
 const server = http.createServer(app);
@@ -11,30 +11,30 @@ app.use(express.static(__dirname + "/public"));
 
 io.sockets.on("error", e => console.log(e));
 
-let broadcaster
-
 io.sockets.on("connection", socket => {
   socket.on("error", e => console.log(e));
-  
-  socket.on("broadcaster", ( secret ) => {
-    console.log('broadcaster ' + secret)
-    socket.to(secret).emit("broadcaster", socket.id);
-  });
-  socket.on("watcher", ({ secret }) => {
-    socket.join( secret )
-  });
-  socket.on("watch", (id) => {
-    socket.to( id ).emit("watcher", socket.id)
-  });
+
   socket.on("disconnect", () => {
-    socket.to(broadcaster).emit("disconnectPeer", socket.id);
+    socket.broadcaster && socket.to(socket.broadcaster).emit("disconnectPeer", socket.id);
+    socket.watcher && socket.to(socket.watcher).emit("disconnectPeer", socket.id);
   });
+
   socket.on("offer", (id, message) => {
+    const w = io.of('/').sockets.get( id )
+    if(!w) return
+    w.broadcaster = socket.id
+    console.debug(`${socket.id} offering to ${id}`)
     socket.to(id).emit("offer", socket.id, message);
   });
+
   socket.on("answer", (id, message) => {
+    const b = io.of('/').sockets.get( id )
+    if(!b) return 
+    b.watcher = socket.id
+    console.debug(`${socket.id} answering to ${id}`)
     socket.to(id).emit("answer", socket.id, message);
   });
+
   socket.on("candidate", (id, message) => {
     socket.to(id).emit("candidate", socket.id, message);
   });

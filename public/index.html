@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title>Viewer</title>
-	<meta charset="UTF-8" />
-	<link href="/styles.css" rel="stylesheet">
-    <script type="text/javascript" src="https://unpkg.com/qr-code-styling/lib/qr-code-styling.js"></script>
-</head>
+    <head>
+        <title>Viewer</title>
+        <meta charset="UTF-8" />
+        <link href="/styles.css" rel="stylesheet">
+    </head>
     <body>
         <div style="display: none; align-items: center; height: 100%" id="connect">
             <div style="text-align: center; width: 100%" >
@@ -14,6 +13,7 @@
             </div>
         </div>
         <video playsinline autoplay></video>
+        <script type="text/javascript" src="https://unpkg.com/qr-code-styling/lib/qr-code-styling.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script src="/watcher.js"></script>
     </body>

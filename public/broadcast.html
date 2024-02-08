@@ -7,10 +7,7 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
   </head>
   <body style="text-align: center; margin: 0; max-height: 100vh;">
-    <div id="connect" style="display: none;">
-      <input id="secret" placeholder="secret"></input>
-      <button onclick="connect()">connect</button>
-    </div>
+    <p id="error" style="color: red; text-align: center;">No watcher connected</p>
     <video playsinline autoplay muted ></video>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/broadcaster.js"></script>

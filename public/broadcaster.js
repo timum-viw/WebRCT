@@ -13,26 +13,29 @@ const video = document.querySelector("video");
 // Media contrains
 const constraints = {
   audio: false,
-  video: { facingMode: 'rear' }
+  video: { facingMode: 'environment' }
 };
 
 navigator.mediaDevices
   .getUserMedia(constraints)
   .then(stream => {
-    document.getElementById("connect").style = "display: block"
     video.srcObject = stream;
   })
   .catch(error => socket.emit('error', error) );
 
-socket.on("watcher", id => {
-  peerConnection = new RTCPeerConnection();
+socket.on("connect", () => {
+  const watcher = location.hash.substring(1)
+  if(!watcher) return
+  document.getElementById('error').style.display = 'none'
+
+  peerConnection = new RTCPeerConnection()
 
   let stream = video.srcObject;
   stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     
   peerConnection.onicecandidate = event => {
     if (event.candidate) {
-      socket.emit("candidate", id, event.candidate);
+      socket.emit("candidate", watcher, event.candidate);
     }
   };
 
@@ -40,7 +43,7 @@ socket.on("watcher", id => {
     .createOffer()
     .then(sdp => peerConnection.setLocalDescription(sdp))
     .then(() => {
-      socket.emit("offer", id, peerConnection.localDescription);
+      socket.emit("offer", watcher, peerConnection.localDescription);
     });
 });
 
@@ -59,8 +62,3 @@ socket.on("disconnectPeer", id => {
 window.onunload = window.onbeforeunload = () => {
   socket.close();
 };
-
-window.connect = () => {
-  const value = document.querySelector("input").value
-  socket.emit("broadcaster", value)
-}
