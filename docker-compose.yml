@@ -1,0 +1,18 @@
+services:
+  webrtc:
+    image: node
+    restart: always
+    expose:
+      - "3000"
+    environment:
+      - VIRTUAL_HOST=webrtc.digbata.de
+      - VIRTUAL_PORT=3000
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: yarn nodemon
+    networks:
+      - proxy
+networks:
+  proxy:
+    external: true
